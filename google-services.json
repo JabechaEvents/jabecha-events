@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "861350259078",
+    "project_id": "jabechaevents-d00d7",
+    "storage_bucket": "jabechaevents-d00d7.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:861350259078:android:1ba3e9fad473f08efd6407",
+        "android_client_info": {
+          "package_name": "com.visionport.jabechaevents"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCbALmOveSxIE8WIU0-KZB5SZF-oZ94EWg"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
