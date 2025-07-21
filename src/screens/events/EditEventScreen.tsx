@@ -2,7 +2,7 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { router } from 'expo-router';
 import React, { useEffect, useState } from 'react';
 import { Controller, useForm } from 'react-hook-form';
-import { Alert, ScrollView, StyleSheet, View } from 'react-native';
+import { Alert, ScrollView, StyleSheet, Switch, View } from 'react-native';
 import { Divider, Text, useTheme } from 'react-native-paper';
 
 import JButton from '@/src/components/ui/JButton';
@@ -14,13 +14,14 @@ import JScreen from '@/src/components/ui/JScreen';
 import { useAuth } from '@/src/context/AuthContext';
 import { EventService } from '@/src/services/eventService';
 import { CreateEventFormData, createEventSchema, transformFormToCreateData } from '@/src/validation/eventValidation';
+import { useLocalSearchParams } from 'expo-router';
 
-export default function EditEventScreen({ route }) {
+export default function EditEventScreen() {
+  const { id: eventId } = useLocalSearchParams<{ id: string }>();
   const theme = useTheme();
   const { user } = useAuth();
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [uploadingImage, setUploadingImage] = useState(false);
-  const { eventId } = route.params;
 
   const {
     control,
@@ -41,15 +42,27 @@ export default function EditEventScreen({ route }) {
     mode: 'onChange',
   });
 
+  function toDateSafe(val: any): Date | undefined {
+    if (!val) return undefined;
+    if (val instanceof Date) return val;
+    if (val.toDate) return val.toDate();
+    return undefined;
+  }
+
   useEffect(() => {
     const loadEventDetails = async () => {
       try {
         const event = await EventService.getEvent(eventId);
+        if (!event) {
+          Alert.alert('Error', 'Event not found.');
+          return;
+        }
         setValue('title', event.title);
         setValue('description', event.description);
         setValue('venue', event.venue);
-        setValue('dateTime', event.dateTime);
-        setValue('isPrivate', event.isPrivate);
+        const dateValue = toDateSafe(event.dateTime);
+        if (dateValue) setValue('dateTime', dateValue);
+        setValue('isPrivate', !!event.isPrivate);
         setValue('maxGuests', event.maxGuests);
         setValue('coverImage', event.coverImage);
       } catch (error) {
@@ -57,7 +70,6 @@ export default function EditEventScreen({ route }) {
         Alert.alert('Error', 'Failed to load event details.');
       }
     };
-
     loadEventDetails();
   }, [eventId, setValue]);
 
@@ -128,14 +140,17 @@ export default function EditEventScreen({ route }) {
             name="title"
             control={control}
             render={({ field: { onChange, value } }) => (
-              <JInput
-                label="Event Title *"
-                value={value}
-                onChangeText={onChange}
-                error={errors.title?.message}
-                placeholder="e.g., Memorial Service for..."
-                maxLength={100}
-              />
+              <>
+                <JInput
+                  label="Event Title *"
+                  value={value}
+                  onChangeText={onChange}
+                  error={!!errors.title}
+                  placeholder="e.g., Memorial Service for..."
+                  maxLength={100}
+                />
+                {errors.title?.message && <Text style={{ color: 'red' }}>{errors.title.message}</Text>}
+              </>
             )}
           />
 
@@ -144,16 +159,19 @@ export default function EditEventScreen({ route }) {
             name="description"
             control={control}
             render={({ field: { onChange, value } }) => (
-              <JInput
-                label="Description *"
-                value={value}
-                onChangeText={onChange}
-                error={errors.description?.message}
-                placeholder="Tell people about this event..."
-                multiline
-                numberOfLines={4}
-                maxLength={1000}
-              />
+              <>
+                <JInput
+                  label="Description *"
+                  value={value}
+                  onChangeText={onChange}
+                  error={!!errors.description}
+                  placeholder="Tell people about this event..."
+                  multiline
+                  numberOfLines={4}
+                  maxLength={1000}
+                />
+                {errors.description?.message && <Text style={{ color: 'red' }}>{errors.description.message}</Text>}
+              </>
             )}
           />
 
@@ -162,14 +180,17 @@ export default function EditEventScreen({ route }) {
             name="venue"
             control={control}
             render={({ field: { onChange, value } }) => (
-              <JInput
-                label="Venue *"
-                value={value}
-                onChangeText={onChange}
-                error={errors.venue?.message}
-                placeholder="e.g., St. Mary's Church, Lagos"
-                maxLength={200}
-              />
+              <>
+                <JInput
+                  label="Venue *"
+                  value={value}
+                  onChangeText={onChange}
+                  error={!!errors.venue}
+                  placeholder="e.g., St. Mary's Church, Lagos"
+                  maxLength={200}
+                />
+                {errors.venue?.message && <Text style={{ color: 'red' }}>{errors.venue.message}</Text>}
+              </>
             )}
           />
 
@@ -234,17 +255,20 @@ export default function EditEventScreen({ route }) {
             name="maxGuests"
             control={control}
             render={({ field: { onChange, value } }) => (
-              <JInput
-                label="Maximum Guests (Optional)"
-                value={value?.toString() || ''}
-                onChangeText={(text) => {
-                  const number = parseInt(text);
-                  onChange(isNaN(number) ? undefined : number);
-                }}
-                error={errors.maxGuests?.message}
-                placeholder="e.g., 100"
-                keyboardType="numeric"
-              />
+              <>
+                <JInput
+                  label="Maximum Guests (Optional)"
+                  value={value?.toString() || ''}
+                  onChangeText={(text) => {
+                    const number = parseInt(text);
+                    onChange(isNaN(number) ? undefined : number);
+                  }}
+                  error={!!errors.maxGuests}
+                  placeholder="e.g., 100"
+                  keyboardType="numeric"
+                />
+                {errors.maxGuests?.message && <Text style={{ color: 'red' }}>{errors.maxGuests.message}</Text>}
+              </>
             )}
           />
         </View>
@@ -261,7 +285,7 @@ export default function EditEventScreen({ route }) {
 
           <JButton
             mode="contained"
-            onPress={handleSubmit(handleEditEvent)}
+            onPress={handleSubmit(handleEditEvent as any)}
             loading={isSubmitting || uploadingImage}
             disabled={!isValid || isSubmitting || uploadingImage}
             style={styles.createButton}

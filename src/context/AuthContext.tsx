@@ -1,9 +1,12 @@
 import { createUserWithEmailAndPassword, onAuthStateChanged, sendPasswordResetEmail, signInWithEmailAndPassword, signOut, User } from 'firebase/auth';
 import React, { createContext, useContext, useEffect, useState } from 'react';
 import { auth } from '../firebase/firebase';
+import { UserProfile, UserService } from '../services/userService';
 
 interface AuthContextType {
   user: User | null;
+  userProfile: UserProfile | null;
+  setUserProfile: (profile: UserProfile | null) => void;
   loading: boolean;
   isAuthenticated: boolean;
   signIn: (email: string, password: string) => Promise<void>;
@@ -25,20 +28,28 @@ export function useAuth() {
 
 export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
+  const [userProfile, setUserProfile] = useState<UserProfile | null>(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    const unsubscribe = onAuthStateChanged(auth, (user) => {
+    const unsubscribe = onAuthStateChanged(auth, async (user) => {
       setUser(user);
+      if (user) {
+        // Fetch user profile from Firestore
+        const profile = await UserService.getUserProfile(user.uid);
+        setUserProfile(profile);
+      } else {
+        setUserProfile(null);
+      }
       setLoading(false);
     });
-
     return unsubscribe;
   }, []);
 
   const signIn = async (email: string, password: string) => {
     try {
       await signInWithEmailAndPassword(auth, email, password);
+      // userProfile will be fetched by onAuthStateChanged
     } catch (error: any) {
       throw new Error(error.message);
     }
@@ -46,7 +57,14 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   const signUp = async (email: string, password: string) => {
     try {
-      await createUserWithEmailAndPassword(auth, email, password);
+      const cred = await createUserWithEmailAndPassword(auth, email, password);
+      // Create Firestore user profile
+      await UserService.createUserProfile(cred.user.uid, {
+        displayName: '',
+        avatarUrl: '',
+        email: cred.user.email || '',
+      });
+      // userProfile will be fetched by onAuthStateChanged
     } catch (error: any) {
       throw new Error(error.message);
     }
@@ -74,6 +92,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   const value: AuthContextType = {
     user,
+    userProfile,
+    setUserProfile,
     loading,
     isAuthenticated: user !== null,
     signIn,
