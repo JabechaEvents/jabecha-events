@@ -24,7 +24,7 @@ export default function RootLayout() {
     <AuthProvider>
       <PaperProvider theme={theme}>
         <ThemeProvider value={colorScheme === 'dark' ? DarkTheme : NavigationDefaultTheme}>
-          <AuthNavigator />
+          <AppNavigator />
           <StatusBar style="auto" />
         </ThemeProvider>
       </PaperProvider>
@@ -32,15 +32,13 @@ export default function RootLayout() {
   );
 }
 
-function AuthNavigator() {
-  const { user } = useAuth();
+function AppNavigator() {
   return (
     <Stack>
-      {user ? (
-        <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
-      ) : (
-        <Stack.Screen name="(auth)" options={{ headerShown: false }} />
-      )}
+      <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
+      <Stack.Screen name="(auth)" options={{ headerShown: false }} />
+      <Stack.Screen name="events/create" options={{ headerShown: false }} />
+      <Stack.Screen name="events/[id]" options={{ headerShown: false }} />
       <Stack.Screen name="+not-found" />
     </Stack>
   );
