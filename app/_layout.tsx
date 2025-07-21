@@ -1,13 +1,13 @@
 import { DarkTheme, DefaultTheme as NavigationDefaultTheme, ThemeProvider } from '@react-navigation/native';
-import { Provider as PaperProvider } from 'react-native-paper';
-import { theme } from '../src/theme/theme';
 import { useFonts } from 'expo-font';
 import { Stack } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
+import { Provider as PaperProvider } from 'react-native-paper';
 import 'react-native-reanimated';
+import { theme } from '../src/theme/theme';
 
 import { useColorScheme } from '@/hooks/useColorScheme';
-import { AuthProvider, useAuth } from '../src/context/AuthContext';
+import { AuthProvider } from '../src/context/AuthContext';
 
 export default function RootLayout() {
   const colorScheme = useColorScheme();
@@ -24,7 +24,7 @@ export default function RootLayout() {
     <AuthProvider>
       <PaperProvider theme={theme}>
         <ThemeProvider value={colorScheme === 'dark' ? DarkTheme : NavigationDefaultTheme}>
-          <AuthNavigator />
+          <AppNavigator />
           <StatusBar style="auto" />
         </ThemeProvider>
       </PaperProvider>
@@ -32,15 +32,13 @@ export default function RootLayout() {
   );
 }
 
-function AuthNavigator() {
-  const { user } = useAuth();
+function AppNavigator() {
   return (
     <Stack>
-      {user ? (
-        <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
-      ) : (
-        <Stack.Screen name="(auth)" options={{ headerShown: false }} />
-      )}
+      <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
+      <Stack.Screen name="(auth)" options={{ headerShown: false }} />
+      <Stack.Screen name="events/create" options={{ headerShown: false }} />
+      <Stack.Screen name="events/[id]" options={{ headerShown: false }} />
       <Stack.Screen name="+not-found" />
     </Stack>
   );

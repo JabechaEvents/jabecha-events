@@ -1,14 +1,14 @@
 import React from 'react';
-import { useForm, Controller } from 'react-hook-form';
+import { Controller, useForm } from 'react-hook-form';
 import { z } from 'zod';
 // @ts-ignore
-import { zodResolver } from '@hookform/resolvers/zod';
-import { useRouter, Link } from 'expo-router';
-import { Alert } from 'react-native';
-import JScreen from '@/components/ui/JScreen';
-import JInput from '@/components/ui/JInput';
 import JButton from '@/components/ui/JButton';
+import JInput from '@/components/ui/JInput';
+import JScreen from '@/components/ui/JScreen';
 import { useAuth } from '@/context/AuthContext';
+import { zodResolver } from '@hookform/resolvers/zod';
+import { useRouter } from 'expo-router';
+import { Alert } from 'react-native';
 
 const schema = z.object({
   email: z.string().email(),
